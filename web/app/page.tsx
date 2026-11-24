@@ -9,14 +9,12 @@ import {
 } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TaskTable, type Task } from "./task-table";
+import type { Task } from "@/lib/task";
+import { fetchTaskApi } from "@/lib/task-api";
+import { TaskTable } from "./task-table";
 
 async function getTasks(): Promise<Task[]> {
-  const apiUrl = process.env.TASK_API_URL ?? "http://localhost:3001";
-  const response = await fetch(`${apiUrl.replace(/\/+$/, "")}/tasks`, {
-    cache: "no-store",
-    signal: AbortSignal.timeout(5000),
-  });
+  const response = await fetchTaskApi();
 
   if (!response.ok) {
     throw new Error(`Cannot load tasks (HTTP ${response.status})`);

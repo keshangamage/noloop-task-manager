@@ -10,20 +10,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const taskStatuses = {
-  TODO: { label: "To do", variant: "outline" },
-  IN_PROGRESS: { label: "In progress", variant: "secondary" },
-  DONE: { label: "Done", variant: "default" },
-} as const;
-
-export interface Task {
-  id: string;
-  title: string;
-  description?: string | null;
-  status: keyof typeof taskStatuses;
-  dueDate?: string | null;
-}
+import { taskStatuses, type Task } from "@/lib/task";
+import { TaskDialog } from "./task-dialog";
 
 const formatDate = new Intl.DateTimeFormat("en", {
   month: "short",
@@ -35,9 +23,12 @@ const formatDate = new Intl.DateTimeFormat("en", {
 export function TaskTable({ tasks }: { tasks: Task[] }) {
   return (
     <section aria-labelledby="tasks-heading" className="overflow-hidden rounded-2xl border bg-card text-card-foreground">
-      <p className="border-b px-4 py-4 text-sm font-medium text-muted-foreground sm:px-6">
-        {tasks.length} {tasks.length === 1 ? "task" : "tasks"}
-      </p>
+      <div className="flex items-center justify-between gap-4 border-b px-4 py-3 sm:px-6">
+        <p className="text-sm font-medium text-muted-foreground">
+          {tasks.length} {tasks.length === 1 ? "task" : "tasks"}
+        </p>
+        <TaskDialog />
+      </div>
 
       <Table aria-labelledby="tasks-heading" className="table-fixed">
         <TableHeader className="bg-muted/55">
@@ -64,10 +55,15 @@ export function TaskTable({ tasks }: { tasks: Task[] }) {
             return (
               <TableRow key={task.id}>
                 <TableCell className="px-4 py-4 whitespace-normal sm:px-6">
-                  <p className="font-medium wrap-anywhere">{task.title}</p>
-                  {task.description && (
-                    <p className="mt-1 text-sm wrap-anywhere text-muted-foreground">{task.description}</p>
-                  )}
+                  <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                    <div className="min-w-0">
+                      <p className="font-medium wrap-anywhere">{task.title}</p>
+                      {task.description && (
+                        <p className="mt-1 text-sm wrap-anywhere text-muted-foreground">{task.description}</p>
+                      )}
+                    </div>
+                    <TaskDialog task={task} />
+                  </div>
                 </TableCell>
                 <TableCell><Badge variant={status.variant}>{status.label}</Badge></TableCell>
                 <TableCell className="pr-4 whitespace-normal sm:pr-6">
