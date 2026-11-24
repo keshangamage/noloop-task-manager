@@ -1,7 +1,7 @@
 "use client";
 
 import { Plus } from "lucide-react";
-import { type FormEvent, useId, useRef, useState, useTransition } from "react";
+import { type FormEvent, type Ref, useId, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { taskStatuses, type Task } from "@/lib/task";
 import { saveTask } from "./task-actions";
 
-export function TaskDialog({ task }: { task?: Task }) {
+export function TaskDialog({ task, triggerRef }: { task?: Task; triggerRef?: Ref<HTMLButtonElement> }) {
   const [open, setOpen] = useState(false);
   const [titleInvalid, setTitleInvalid] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -95,7 +95,7 @@ export function TaskDialog({ task }: { task?: Task }) {
           Edit
         </DialogTrigger>
       ) : (
-        <DialogTrigger render={<Button />}>
+        <DialogTrigger render={<Button ref={triggerRef} />}>
           <Plus data-icon="inline-start" aria-hidden="true" />
           Add task
         </DialogTrigger>
