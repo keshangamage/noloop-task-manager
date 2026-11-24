@@ -13,13 +13,29 @@ export async function saveTask(id: string | null, form: FormData): Promise<strin
     dueDate: dueDate === "" ? null : dueDate ?? undefined,
   };
 
-  let response: Response;
-  try {
-    response = await fetchTaskApi(id === null ? "" : `/${encodeURIComponent(id)}`, {
+  return mutateTask(
+    id === null ? "" : `/${encodeURIComponent(id)}`,
+    {
       method: id === null ? "POST" : "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
-    });
+    },
+    "Couldn’t save the task. Try again.",
+  );
+}
+
+export async function deleteTask(id: string): Promise<string | null> {
+  return mutateTask(
+    `/${encodeURIComponent(id)}`,
+    { method: "DELETE" },
+    "Couldn’t delete the task. Try again.",
+  );
+}
+
+async function mutateTask(path: string, options: RequestInit, fallback: string): Promise<string | null> {
+  let response: Response;
+  try {
+    response = await fetchTaskApi(path, options);
   } catch {
     return "Couldn’t reach the API. Check that it’s running and try again.";
   }
@@ -27,7 +43,7 @@ export async function saveTask(id: string | null, form: FormData): Promise<strin
   if (!response.ok) {
     const result: { message?: string | string[] } | null = await response.json().catch(() => null);
     const message = Array.isArray(result?.message) ? result.message.join(" ") : result?.message;
-    return typeof message === "string" && message ? message : "Couldn’t save the task. Try again.";
+    return typeof message === "string" && message ? message : fallback;
   }
 
   revalidatePath("/");

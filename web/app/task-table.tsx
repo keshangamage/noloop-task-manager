@@ -1,6 +1,8 @@
 "use client";
 
+import { useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Empty, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 import {
   Table,
@@ -12,6 +14,7 @@ import {
 } from "@/components/ui/table";
 import { taskStatuses, type Task } from "@/lib/task";
 import { TaskDialog } from "./task-dialog";
+import { TaskDeleteDialog } from "./task-delete-dialog";
 
 const formatDate = new Intl.DateTimeFormat("en", {
   month: "short",
@@ -21,13 +24,17 @@ const formatDate = new Intl.DateTimeFormat("en", {
 });
 
 export function TaskTable({ tasks }: { tasks: Task[] }) {
+  const [deleteTarget, setDeleteTarget] = useState<Task | null>(null);
+  const addButton = useRef<HTMLButtonElement>(null);
+  const deleteButton = useRef<HTMLButtonElement>(null);
+
   return (
     <section aria-labelledby="tasks-heading" className="overflow-hidden rounded-2xl border bg-card text-card-foreground">
       <div className="flex items-center justify-between gap-4 border-b px-4 py-3 sm:px-6">
         <p className="text-sm font-medium text-muted-foreground">
           {tasks.length} {tasks.length === 1 ? "task" : "tasks"}
         </p>
-        <TaskDialog />
+        <TaskDialog triggerRef={addButton} />
       </div>
 
       <Table aria-labelledby="tasks-heading" className="table-fixed">
@@ -62,7 +69,22 @@ export function TaskTable({ tasks }: { tasks: Task[] }) {
                         <p className="mt-1 text-sm wrap-anywhere text-muted-foreground">{task.description}</p>
                       )}
                     </div>
-                    <TaskDialog task={task} />
+                    <div className="flex shrink-0 flex-wrap gap-1.5">
+                      <TaskDialog task={task} />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        aria-label={`Delete ${task.title}`}
+                        aria-haspopup="dialog"
+                        onClick={(event) => {
+                          deleteButton.current = event.currentTarget;
+                          setDeleteTarget(task);
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell><Badge variant={status.variant}>{status.label}</Badge></TableCell>
@@ -78,6 +100,15 @@ export function TaskTable({ tasks }: { tasks: Task[] }) {
           })}
         </TableBody>
       </Table>
+
+      <TaskDeleteDialog
+        task={deleteTarget}
+        onClose={(deleted) => {
+          if (deleted) deleteButton.current = null;
+          setDeleteTarget(null);
+        }}
+        finalFocus={() => deleteButton.current?.isConnected ? deleteButton.current : addButton.current}
+      />
     </section>
   );
 }
